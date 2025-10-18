@@ -6,8 +6,14 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/EntCrying/Scenes/SampleScene.unity
+    path: Assets/EntCrying/Scenes/Title.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/EntCrying/Scenes/MainMenu.unity
+    guid: 35c3cfc4893e95748b3184d9aa77acda
+  - enabled: 1
+    path: Assets/EntCrying/Scenes/Game.unity
+    guid: 6a8ca11ea7a320e47967e48cc06c0af2
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
