@@ -39,7 +39,7 @@ public abstract class SingletonResources<T1> : MonoBehaviour where T1 : Componen
                     return _instance;
 
                 string resourcesPath = (Activator.CreateInstance<T1>() as SingletonResources<T1>)?.ResourcePath;
-                string objName = typeof(T1).Name;
+                string objName = CUtil.CString.NicifyVariableName(typeof(T1).Name);
             
                 if (string.IsNullOrEmpty(resourcesPath))
                 {

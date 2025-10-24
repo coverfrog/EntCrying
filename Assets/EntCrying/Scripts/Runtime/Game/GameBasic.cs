@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using UniRx;
 using UnityEngine;
 
@@ -15,30 +16,28 @@ public class GameBasic : Game
         
         // 시작 재화 선택 UI 열기
         _uiSelectStartItems = UIManager.Instance.SelectStartItems;
-        _uiSelectStartItems.Begin(OnGameStart);
+        _uiSelectStartItems.Begin(OnGameStart, OnGameBack);
     }
 
-    private void OnGameStart(IEnumerable<UISelectStartItemsElement.Report> reports)
+    private void OnGameStart(IReadOnlyDictionary<Item, int> initItemDict)
     {
         // 시작 재화 선택 UI 닫기
         _uiSelectStartItems.End();
+  
+        // 인벤토리 시작
+        _inventory.Begin(initItemDict);
         
         // 선택에 따른 결과 아이템들을 인벤토리에 추가
-        foreach (UISelectStartItemsElement.Report report in reports)
-        {
-            Item item = report.item;
-            int count = report.count;
-
-            if (count <= 0)
-            {
-                continue;
-            }
-            
-            _ = _inventory.TryAddItem(item, count, out _);
-            
-        }
+        // ItemGetResult result = GetItems(reports);
         
         // 인벤토리 열기
-        _inventory.ActiveUI(true);
+
+        // result.Log();
     }
+
+    private void OnGameBack()
+    {
+        Debug.Log("back");
+    }
+
 }

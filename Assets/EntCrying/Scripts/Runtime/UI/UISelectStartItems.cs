@@ -4,29 +4,23 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UniRx;
+using UnityEngine.Pool;
 using UnityEngine.UI;
 
 public class UISelectStartItems : MonoBehaviour
 {
-    [Serializable]
-    public class ElementInitializer
-    {
-        public UISelectStartItemsElement element;
-        public Item item;
-
-        public void Initialize()
-        {
-            element.Initialize(item);   
-        }
-    }
-    
-    public delegate void GameStartDelegate(IEnumerable<UISelectStartItemsElement.Report> reports);
+    public delegate void GameStartDelegate(IReadOnlyDictionary<Item, int> initItemDict);
+    public delegate void GameBackDelegate();
 
     [Header("[ OPTION ]")]
     [SerializeField] private int _initAbleCount = 3;
-    [SerializeField] private List<ElementInitializer> _elementInitializerList = new();
+    [SerializeField] private List<Item> _initItemList = new();
     
-    [Header("[ REFERENCE ]")]
+    [Header("[ RESOURCE ]")] 
+    [SerializeField] private UISelectStartItemsElement _elementPrefab;
+
+    [Header("[ REFERENCE ]")] 
+    [SerializeField] private RectTransform _elementContentRt;
     [SerializeField] private TMP_Text _remainAbleCountText;
     [SerializeField] private Button _gameStartButton;
     [SerializeField] private Button _backButton;
@@ -36,15 +30,12 @@ public class UISelectStartItems : MonoBehaviour
 
     private IDisposable _disposableAbleCount;
     
-    private event GameStartDelegate OnActGameStart;
+    private GameStartDelegate _onActGameStart;
+    private GameBackDelegate _onActGameBack;
 
+    private IObjectPool<UISelectStartItemsElement> _pool;
     private List<UISelectStartItemsElement> _elementList = new();
-
-    private void Awake()
-    {
-        _elementList = _elementInitializerList.Select(x => x.element).ToList();
-    }
-
+    
     private void OnEnable()
     {
         _disposableAbleCount = _ableCount.Subscribe(OnChangeAbleSelectCount);
@@ -52,13 +43,7 @@ public class UISelectStartItems : MonoBehaviour
         _gameStartButton.onClick.AddListener(OnGameStart);
         _backButton.onClick.AddListener(OnBack);
         
-        foreach (UISelectStartItemsElement element in _elementList)
-        {
-            element.OnActClickCount += OnActClickCount;
-        }
-        
         _blockObject.SetActive(false);
-        
     }
 
     private void OnDisable()
@@ -67,25 +52,69 @@ public class UISelectStartItems : MonoBehaviour
         
         _gameStartButton.onClick.RemoveListener(OnGameStart);
         _backButton.onClick.RemoveListener(OnBack);
-        
-        foreach (UISelectStartItemsElement element in _elementList)
-        {
-            element.OnActClickCount -= OnActClickCount;
-        }
     }
     
-    public void Begin(GameStartDelegate onGameStart)
+    public void Begin(GameStartDelegate onGameStart, GameBackDelegate onGameBack)
     {
-        OnActGameStart -= onGameStart;
-        OnActGameStart += onGameStart;
-        
-        _ableCount.Value = _initAbleCount;
-        
-        foreach (ElementInitializer initializer in _elementInitializerList)
+        // Pool 초기화
+        if (_pool == null)
         {
-            initializer.Initialize();
+            _pool = new ObjectPool<UISelectStartItemsElement>(
+                createFunc: () =>
+                {
+                    UISelectStartItemsElement ele = Instantiate(_elementPrefab, _elementContentRt);
+                    _elementList.Add(ele);
+
+                    return ele;
+                },
+                actionOnGet: ele =>
+                {
+                    ele.gameObject.SetActive(true);
+                },
+                actionOnRelease: ele =>
+                {
+                    ele.gameObject.SetActive(false);
+                },
+                actionOnDestroy: ele =>
+                {
+                    Destroy(ele.gameObject);
+                });
         }
         
+        // 필요 개수
+        int initCount = _initItemList.Count;
+        int addCount = initCount - _pool.CountInactive;
+
+        for (int i = 0; i < Mathf.Abs(addCount); i++)
+        {
+            if (addCount > 0)
+            {
+                _ = _pool.Get();
+            }
+
+            else
+            {
+                _pool.Release(_elementList[_elementList.Count - 1 - i]);
+            }
+        }
+        
+        // 값 부여
+        for (int i = 0; i < initCount; i++)
+        {
+            Item item = _initItemList[i];
+            UISelectStartItemsElement element = _elementList[i];
+            
+            element.Initialize(item, OnActClickCount);
+        }
+        
+        // 이벤트 등록
+        _onActGameStart = onGameStart;
+        _onActGameBack = onGameBack;
+        
+        // 값 초기화
+        _ableCount.Value = _initAbleCount;
+        
+        // 켜기
         gameObject.SetActive(true);
     }
 
@@ -113,15 +142,24 @@ public class UISelectStartItems : MonoBehaviour
 
     private void OnGameStart()
     {
+        // 상호작용 막기
         _blockObject.SetActive(true);
+
+        // 초기 아이템 선언
+        Dictionary<Item, int> initItemDict = _elementList
+            .Select(x => x.GetResult())
+            .Where(x => x.count > 0)
+            .GroupBy(x => x.value)
+            .ToDictionary(x => x.Key, x => x.Sum(y => y.count));
         
-        IEnumerable<UISelectStartItemsElement.Report> reports = _elementList.Select(x => x.GetReport());
-        
-        OnActGameStart?.Invoke(reports);
+        // 게임 시작 이벤트 콜백
+        _onActGameStart?.Invoke(initItemDict);
     }
     
     private void OnBack()
     {
         _blockObject.SetActive(true);
+        
+        _onActGameBack?.Invoke();
     }
 }

@@ -1,45 +1,79 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Pool;
 
 public class UIInventory : MonoBehaviour
 {
-    public class Va
-    {
-        
-    }
-    
-    [SerializeField] private List<UIInventorySlot> _inventorySlotList = new();
+    [Header("[ RESOURCE ]")] 
+    [SerializeField] private UIInventorySlot _slotPrefab;
 
-    private InventorySlot _slot;
+    [Header("[ REFERENCE ]")]
+    [SerializeField] private RectTransform _slotContentRt;
+
+    private IObjectPool<UIInventorySlot> _pool;
+    private List<UIInventorySlot> _slotList = new List<UIInventorySlot>();
     
-    public void Initialize()
+    public void Begin(int slotMaxCount)
     {
-        foreach (UIInventorySlot slot in _inventorySlotList)
+        // Pool 초기화
+        if (_pool == null)
+        {
+            _pool = new ObjectPool<UIInventorySlot>(
+                createFunc: () =>
+                {
+                    UIInventorySlot slot = Instantiate(_slotPrefab, _slotContentRt);
+                    _slotList.Add(slot);
+
+                    return slot;
+                },
+                actionOnGet: slot =>
+                {
+                    slot.gameObject.SetActive(true);
+                },
+                actionOnRelease: slot =>
+                {
+                    slot.gameObject.SetActive(false);
+                },
+                actionOnDestroy: slot =>
+                {
+                    Destroy(slot.gameObject);
+                });
+        }
+        
+        // 필요 개수
+        int addCount = slotMaxCount - _pool.CountInactive;
+
+        for (int i = 0; i < Mathf.Abs(addCount); i++)
+        {
+            if (addCount > 0)
+            {
+                _ = _pool.Get();
+            }
+
+            else
+            {
+                _pool.Release(_slotList[_slotList.Count - 1 - i]);
+            }
+        }
+        
+        // 슬롯 전부 초기화
+        foreach (UIInventorySlot slot in _slotList)
         {
             slot.Set(null);
         }
+        
+        // 화면 열기
+        gameObject.SetActive(true);
     }
     
-    public void OnAdd(int idx, InventorySlot slot)
+    public void OnAddItem(int idx, InventorySlot slot)
     {
-        // 데이터
-        _slot = slot;
-        
-        // TODO : 인벤토리도 동적으로 생성 필요
-        // 현재는 빠른 테스팅을 위해 고정
-        
         // 적용
-        _inventorySlotList[idx].Set(slot);
-        
+        _slotList[idx].Set(slot);
     }
-
-    public void OnReplace(Item item, int oldCount, int newCount)
-    {
-        
-    }
-
-    public void OnCountChange(int count)
+    
+    public void OnRemoveItem(int idx, InventorySlot slot)
     {
         
     }

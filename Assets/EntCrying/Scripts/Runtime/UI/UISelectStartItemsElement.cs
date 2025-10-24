@@ -6,18 +6,6 @@ using UnityEngine.UI;
 
 public class UISelectStartItemsElement : MonoBehaviour
 {
-    [Serializable]
-    public class Report
-    {
-        public Item item;
-        public int count;
-
-        public void Log()
-        {
-            Debug.Log($"[ITEM DATA] {item.CodeName} : {count}");
-        }
-    }
-    
     public delegate void OnClickCount(int add);
     
     [Header("[ REFERENCE ]")]
@@ -28,9 +16,9 @@ public class UISelectStartItemsElement : MonoBehaviour
     [SerializeField] private Button _reduceButton;
 
     [Header("[ DEBUG ]")]
-    [SerializeField] private Report _report;
+    [SerializeField] private CountValue<Item> _result;
     
-    public event OnClickCount OnActClickCount;
+    private OnClickCount OnActClickCount;
     
     private ReactiveProperty<int> _selectedCount = new();
 
@@ -52,14 +40,16 @@ public class UISelectStartItemsElement : MonoBehaviour
         _reduceButton.onClick.RemoveListener(OnClickReduce);
     }
 
-    public void Initialize(Item item)
+    public void Initialize(Item item, OnClickCount onClickCount)
     {
+        OnActClickCount = onClickCount;
+        
         _selectedCount.Value = 0;
         
         _displayNameText.text = item.DisplayName;
         _icon.sprite = item.Icon;
         
-        _report.item = item; 
+        _result.value = item; 
     }
 
     private void OnClickAdd()
@@ -91,8 +81,8 @@ public class UISelectStartItemsElement : MonoBehaviour
         _countText.text = count.ToString();
         _reduceButton.interactable = count > 0;
 
-        _report.count = count;
+        _result.count = count;
     }
 
-    public Report GetReport() => _report;
+    public CountValue<Item> GetResult() => _result;
 }
