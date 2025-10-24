@@ -4,7 +4,7 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 
-public class Inventory : IDisposable
+public class Inventory : MonoBehaviour
 {
     private readonly ReactiveDictionary<int, InventorySlot> _itemDict = new();
 
@@ -14,25 +14,56 @@ public class Inventory : IDisposable
         { ReactiveDictEventType.Remove  , null },
     };
     
-    private const int _slotMaxCount = 15;
+    [Header("[ OPTION ]")]
+    [SerializeField] private int _slotMaxCount = 15;
+    
     private int _emptyCursor;
 
     private UIInventory _ui;
-
     
-    
-    #region Dispose
+    #region OnDisable
 
-    public void Dispose()
+    public void OnDisable()
     {
         foreach (IDisposable disposable in _disposableDict.Values)
         {
-            disposable.Dispose();
+            disposable?.Dispose();
         }
+    }
 
-        foreach (InventorySlot slot in _itemDict.Values)
+    #endregion
+    
+    #region Begin
+
+    public void Begin(IReadOnlyDictionary<Item, int> initItemDict)
+    {
+        // 이벤트 등록 전 아이템 사전 초기화
+        _itemDict.Clear();
+        
+        // 이벤트
+        _disposableDict[ReactiveDictEventType.Add]?.Dispose();
+        _disposableDict[ReactiveDictEventType.Add] = _itemDict
+            .ObserveAdd()
+            .Subscribe(x => OnAdd(x.Key, x.Value));
+        
+        _disposableDict[ReactiveDictEventType.Remove]?.Dispose();
+        _disposableDict[ReactiveDictEventType.Remove] = _itemDict
+            .ObserveRemove()
+            .Subscribe(x => OnRemove(x.Key, x.Value));
+ 
+        // UI
+        // * 순서 지킬 것 ( 아이템 등록보단 앞에 있어야함 )
+        // * UI 켜지면서 UI 일괄 초기화
+        _ui = UIManager.Instance.Inventory;
+        _ui.Begin(_slotMaxCount);
+        
+        // 최초 아이템 등록
+        foreach ((Item item, int count) in initItemDict)
         {
-            slot?.Dispose();
+            for (int i = 0; i < count; i++)
+            {
+                _ = AddItem(item);
+            }
         }
     }
 
@@ -109,42 +140,6 @@ public class Inventory : IDisposable
         }
 
         return -1;
-    }
-
-    #endregion
-
-    #region Begin
-
-    public void Begin(IReadOnlyDictionary<Item, int> initItemDict)
-    {
-        // 이벤트 등록 전 아이템 사전 초기화
-        _itemDict.Clear();
-        
-        // 이벤트
-        _disposableDict[ReactiveDictEventType.Add]?.Dispose();
-        _disposableDict[ReactiveDictEventType.Add] = _itemDict
-            .ObserveAdd()
-            .Subscribe(x => OnAdd(x.Key, x.Value));
-        
-        _disposableDict[ReactiveDictEventType.Remove]?.Dispose();
-        _disposableDict[ReactiveDictEventType.Remove] = _itemDict
-            .ObserveRemove()
-            .Subscribe(x => OnRemove(x.Key, x.Value));
- 
-        // UI
-        // * 순서 지킬 것 ( 아이템 등록보단 앞에 있어야함 )
-        // * UI 켜지면서 UI 일괄 초기화
-        _ui = UIManager.Instance.Inventory;
-        _ui.Begin(_slotMaxCount);
-        
-        // 최초 아이템 등록
-        foreach ((Item item, int count) in initItemDict)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                _ = AddItem(item);
-            }
-        }
     }
 
     #endregion

@@ -24,6 +24,8 @@ public class UISelectStartItemsElement : MonoBehaviour
 
     private IDisposable _disposableSelectedCount;
 
+    #region OnEnable
+
     private void OnEnable()
     {
         _disposableSelectedCount = _selectedCount.Subscribe(OnChangeSelectedCount);
@@ -32,6 +34,10 @@ public class UISelectStartItemsElement : MonoBehaviour
         _reduceButton.onClick.AddListener(OnClickReduce);
     }
 
+    #endregion
+
+    #region OnDisable
+
     private void OnDisable()
     {
         _disposableSelectedCount?.Dispose();
@@ -39,6 +45,10 @@ public class UISelectStartItemsElement : MonoBehaviour
         _addButton.onClick.RemoveListener(OnClickAdd);
         _reduceButton.onClick.RemoveListener(OnClickReduce);
     }
+
+    #endregion
+
+    #region Initialize
 
     public void Initialize(Item item, OnClickCount onClickCount)
     {
@@ -52,12 +62,20 @@ public class UISelectStartItemsElement : MonoBehaviour
         _result.value = item; 
     }
 
+    #endregion
+
+    #region OnClickAdd
+
     private void OnClickAdd()
     {
         _selectedCount.Value += 1;
         
         OnActClickCount?.Invoke(-1);
     }
+
+    #endregion
+
+    #region OnClickReduce
 
     private void OnClickReduce()
     {
@@ -71,11 +89,20 @@ public class UISelectStartItemsElement : MonoBehaviour
         OnActClickCount?.Invoke(+1);
     }
 
+    #endregion
+
+    #region OnChangeAbleCount
+
     public void OnChangeAbleCount(bool enableAddButton)
     {
         _addButton.interactable = enableAddButton;
     }
-    
+
+
+    #endregion
+
+    #region OnChangeSelectedCount
+
     private void OnChangeSelectedCount(int count)
     {
         _countText.text = count.ToString();
@@ -84,5 +111,14 @@ public class UISelectStartItemsElement : MonoBehaviour
         _result.count = count;
     }
 
+    #endregion
+
+    #region GetResult
+
     public CountValue<Item> GetResult() => _result;
+
+    #endregion
+    
+    
+
 }

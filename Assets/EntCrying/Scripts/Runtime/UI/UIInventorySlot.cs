@@ -10,45 +10,55 @@ public class UIInventorySlot : MonoBehaviour
     [SerializeField] private Image _iconImage;
     [SerializeField] private TMP_Text _countText;
 
-    private Item _item;
+    [Header("[ DEBUG ]")] 
+    [SerializeField] private Item _item;
+    
     private IDisposable _disposableCount;
-
-    private InventorySlot _slot;
+    
+    #region OnDisable
 
     private void OnDisable()
     {
         _disposableCount?.Dispose();
+        _item = null;
     }
+
+    #endregion
+
+    #region SetNull
+
+    public void SetNull()
+    {
+        _iconImage.sprite = null;
+        _countText.text = "";
+    }
+
+    #endregion
+    
+    #region Set
 
     public void Set(InventorySlot slot)
     {
-        if (slot == null)
-        {
-            _slot = null;
-            
-            _disposableCount?.Dispose();
-            
-            _iconImage.sprite = null;
-            _countText.text = "";
-            
-            return;
-        }
-
-        if (slot == _slot)
+        if (slot.item == _item)
         {
             return;
         }
         
-        _slot = slot;
-
-        if (_disposableCount == null) _disposableCount = _slot.count.Subscribe(OnCountChanged);
+        _iconImage.sprite = slot.item.Icon;
         
-        _iconImage.sprite = _slot.item.Icon;
-       // _countText.text = _slot.count.ToString();
+        _disposableCount?.Dispose();
+        _disposableCount = slot.count.Subscribe(OnCountChanged);
     }
     
+    #endregion
+
+    #region OnCountChanged
+
     private void OnCountChanged(int count)
     {
         _countText.text = count.ToString();
     }
+
+    #endregion
+    
 }

@@ -35,25 +35,35 @@ public class UISelectStartItems : MonoBehaviour
 
     private IObjectPool<UISelectStartItemsElement> _pool;
     private List<UISelectStartItemsElement> _elementList = new();
-    
+
+    #region OnEnable
+
     private void OnEnable()
     {
         _disposableAbleCount = _ableCount.Subscribe(OnChangeAbleSelectCount);
         
         _gameStartButton.onClick.AddListener(OnGameStart);
-        _backButton.onClick.AddListener(OnBack);
+        _backButton.onClick.AddListener(OnGameBack);
         
         _blockObject.SetActive(false);
     }
+
+    #endregion
+
+    #region OnDisable
 
     private void OnDisable()
     {
         _disposableAbleCount?.Dispose();
         
         _gameStartButton.onClick.RemoveListener(OnGameStart);
-        _backButton.onClick.RemoveListener(OnBack);
+        _backButton.onClick.RemoveListener(OnGameBack);
     }
-    
+
+    #endregion
+
+    #region Begin
+
     public void Begin(GameStartDelegate onGameStart, GameBackDelegate onGameBack)
     {
         // Pool 초기화
@@ -118,15 +128,27 @@ public class UISelectStartItems : MonoBehaviour
         gameObject.SetActive(true);
     }
 
+    #endregion
+
+    #region End
+
     public void End()
     {
         gameObject.SetActive(false);
     }
     
+    #endregion
+
+    #region OnActClickCount
+    
     private void OnActClickCount(int add)
     {
         _ableCount.Value += add;
     }
+    
+    #endregion
+
+    #region OnChangeAbleSelectCount
 
     private void OnChangeAbleSelectCount(int count)
     {
@@ -139,6 +161,10 @@ public class UISelectStartItems : MonoBehaviour
             element.OnChangeAbleCount(count > 0);
         }
     }
+
+    #endregion
+
+    #region OnGameStart
 
     private void OnGameStart()
     {
@@ -156,10 +182,18 @@ public class UISelectStartItems : MonoBehaviour
         _onActGameStart?.Invoke(initItemDict);
     }
     
-    private void OnBack()
+    #endregion
+
+    #region OnGameBack
+
+    private void OnGameBack()
     {
         _blockObject.SetActive(true);
         
         _onActGameBack?.Invoke();
     }
+
+    #endregion
+    
+    
 }

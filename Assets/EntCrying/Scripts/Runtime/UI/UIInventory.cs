@@ -13,7 +13,9 @@ public class UIInventory : MonoBehaviour
 
     private IObjectPool<UIInventorySlot> _pool;
     private List<UIInventorySlot> _slotList = new List<UIInventorySlot>();
-    
+
+    #region Begin
+
     public void Begin(int slotMaxCount)
     {
         // Pool 초기화
@@ -60,12 +62,16 @@ public class UIInventory : MonoBehaviour
         // 슬롯 전부 초기화
         foreach (UIInventorySlot slot in _slotList)
         {
-            slot.Set(null);
+            slot.SetNull();
         }
         
         // 화면 열기
         gameObject.SetActive(true);
     }
+    
+    #endregion
+
+    #region OnAddItem
     
     public void OnAddItem(int idx, InventorySlot slot)
     {
@@ -73,8 +79,15 @@ public class UIInventory : MonoBehaviour
         _slotList[idx].Set(slot);
     }
     
+    #endregion
+
+    #region OnRemoveItem
+    
     public void OnRemoveItem(int idx, InventorySlot slot)
     {
         
     }
+    
+    #endregion
+    
 }
