@@ -58,6 +58,12 @@ public class Inventory : MonoBehaviour
         _ui.Begin(_slotMaxCount);
         
         // 최초 아이템 등록
+        // 없으면 패스
+        if (initItemDict == null)
+        {
+            return;
+        }
+        
         foreach ((Item item, int count) in initItemDict)
         {
             for (int i = 0; i < count; i++)

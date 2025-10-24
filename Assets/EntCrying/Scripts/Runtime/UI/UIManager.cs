@@ -6,7 +6,9 @@ public class UIManager : SingletonResources<UIManager>
     
     [SerializeField] private UISelectStartItems _selectStartItems;
     [SerializeField] private UIInventory _inventory;
+    [SerializeField] private UIMonies _monies;
     
     public UISelectStartItems SelectStartItems => _selectStartItems;
     public UIInventory Inventory => _inventory;
+    public UIMonies Monies => _monies;
 }

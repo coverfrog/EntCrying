@@ -125,7 +125,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 278275568}
+    m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 4945486545854702135, guid: ff9af1c82762d0b4ea10de6bbd6d4261, type: 3}
       propertyPath: m_LocalPosition.x
@@ -176,16 +176,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ff9af1c82762d0b4ea10de6bbd6d4261, type: 3}
---- !u!4 &105409853 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4945486545854702135, guid: ff9af1c82762d0b4ea10de6bbd6d4261, type: 3}
-  m_PrefabInstance: {fileID: 105409852}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &105409854 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6782670790995512623, guid: ff9af1c82762d0b4ea10de6bbd6d4261, type: 3}
-  m_PrefabInstance: {fileID: 105409852}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &278275567
 GameObject:
   m_ObjectHideFlags: 0
@@ -215,8 +205,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 105409853}
+  m_Children: []
   m_Father: {fileID: 1030363646}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &278275569
@@ -231,9 +220,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6fc6bbd1b991e584b9ca5c75a047fe38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameBasic
+  _monies:
+  - {fileID: 11400000, guid: 8f0e75a1e3e8d8049aa4530ae70258a0, type: 2}
+  - {fileID: 11400000, guid: 8e189361f8762ad40aaf33358918c8a3, type: 2}
   _inventory: {fileID: 490315315}
-  _player:
-    _obj: {fileID: 105409854}
 --- !u!1 &318592416
 GameObject:
   m_ObjectHideFlags: 0
@@ -695,3 +685,4 @@ SceneRoots:
   - {fileID: 1030363646}
   - {fileID: 2061505210}
   - {fileID: 490315314}
+  - {fileID: 105409852}

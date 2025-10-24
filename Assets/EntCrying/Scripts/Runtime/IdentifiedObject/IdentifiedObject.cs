@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
-public abstract class IdentifiedObject : ScriptableObject
+public abstract class IdentifiedObject : ScriptableObject, ICloneable
 {
     [Header("[ BASE ]")]
     [SerializeField] private Sprite _icon;
@@ -12,4 +13,6 @@ public abstract class IdentifiedObject : ScriptableObject
     public string CodeName => _codeName;
     public string DisplayName => _displayName;
     public string Description => _description;
+
+    public virtual object Clone() => Instantiate(this);
 }
